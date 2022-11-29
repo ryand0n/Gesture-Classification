@@ -71,9 +71,9 @@ def transform(df, label=None):
     df = df.drop(columns=['x', 'y', 'z'])
 
     if label == 'raise':
-        df['target'] = pd.Series([1] * 49)
+        df['target'] = pd.Series([1] * df.shape[0])
     elif label == 'clap':
-        df['target'] = pd.Series([0] * 49)
+        df['target'] = pd.Series([0] * df.shape[0])
 
     return df
 
