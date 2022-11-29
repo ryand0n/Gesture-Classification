@@ -92,10 +92,11 @@ def plot():
     if z_vals.size >= 50:
         z_vals.remove()
 
-def collect_data(i, path, predicter=False):
+def collect_data(i, path, predicter=False, model=None):
     """
     i: how many data points you want to collect
     path: where you want to write your csv file to
+    predicter: whether or not you want to make predictions on incoming data
     """
     record = False
     index = 0
@@ -126,9 +127,9 @@ def collect_data(i, path, predicter=False):
             z_data.append(z)
         elif not record:
             all_data.append({'index':index, 'x':x_data, 'y':y_data, 'z':z_data})
-            
+
             if predicter:
-                print(predict({'index':index, 'x':x_data, 'y':y_data, 'z':z_data}))
+                print(predict(model, {'index':index, 'x':x_data, 'y':y_data, 'z':z_data}))
 
             index += 1
             x_data = []
