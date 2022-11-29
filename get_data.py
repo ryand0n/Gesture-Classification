@@ -21,15 +21,13 @@ def find_pico(ports_found):
         port = ports_found[i]
         str_port = str(port)
         # change this to whatever device name
-        if 'Arduino' in str_port:
-            comm_port = str_port.split(' ')[0]
-    
-    return comm_port
+        if 'USB Serial Device' in str_port:
+            comm_port = str_port.split('-')    
+    return comm_port[0].strip()
 
 # make a serial object
-arduino = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
+arduino = serial.Serial(port=find_pico(get_ports()), baudrate=115200, timeout=.1)
 
-plt.style.use('fivethirtyeight')
 
 index = count()
 
@@ -57,6 +55,7 @@ def get_data():
     print(x,y,z)
 
 def plot():
+    plt.style.use('fivethirtyeight')
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
