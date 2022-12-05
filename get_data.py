@@ -128,7 +128,9 @@ def collect_data(i, path, predicter=False, model=None):
             all_data.append({'index':index, 'x':x_data, 'y':y_data, 'z':z_data})
 
             if predicter:
-                print(predict(model, {'index':index, 'x':x_data, 'y':y_data, 'z':z_data}))
+                if len(x_data) != 0:
+                    pred = predict(model, {'index':index, 'x':x_data, 'y':y_data, 'z':z_data})
+                    print(pred)
 
             index += 1
             x_data = []
@@ -144,13 +146,14 @@ def collect_data(i, path, predicter=False, model=None):
     dict_data = all_data
     csv_file = path
 
-    try:
-        with open(csv_file, 'w') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
-            writer.writeheader()
-            for data in dict_data:
-                writer.writerow(data)
-    except IOError:
-        print("I/O error")
+    if path == None:
+        try:
+            with open(csv_file, 'w') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
+                writer.writeheader()
+                for data in dict_data:
+                    writer.writerow(data)
+        except IOError:
+            print("I/O error")
 
     return dict_data

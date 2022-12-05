@@ -87,6 +87,7 @@ def transform_raw(dic):
        'z_slope']
 
     # creating features
+    print(dic)
     for key, value in dic.items():
         if key != 'index':
             mean = "{}_mean".format(key)
