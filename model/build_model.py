@@ -118,6 +118,10 @@ def transform_raw(dic):
        'z_seg_slope_0', 'z_seg_slope_1', 'z_seg_slope_2', 'z_seg_slope_3',
        'z_seg_slope_4']
 
+    best_features = ['z_mean', 'x_min', 'y_min', 'z_min', 'z_slope', 'z_std',
+       'x_seg_slope_4', 'y_seg_slope_4', 'z_seg_slope_3', 'z_seg_slope_4',
+       'target']
+
     # creating features
     for key, value in dic.items():
         if key != 'index':
@@ -144,7 +148,10 @@ def transform_raw(dic):
                 seg_slope = "{}_seg_slope_{}".format(key, i)
                 data[seg_slope] = segmented_slopes[i]    
 
-    return pd.Series(data).reindex(index=index)#.to_numpy().reshape(1, -1)
+    
+    changed = pd.DataFrame(data, index=[0])
+    return changed[best_features]
+    return pd.Series(data).reindex(index=index).to_numpy().reshape(1, -1)
 
 def generate_random_data(df):
     random_data = np.random.rand(df.shape[0], df.shape[1])
@@ -160,10 +167,17 @@ def connect_df(raising, clap):
     return final
 
 def fit(df):
+    best_features = ['z_mean', 'x_min', 'y_min', 'z_min', 'z_slope', 'z_std',
+       'x_seg_slope_4', 'y_seg_slope_4', 'z_seg_slope_3', 'z_seg_slope_4',
+       'target']
+
+    df = df[best_features]
+
     X = df.loc[:, df.columns != 'target']
     y = df['target']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
-    clf = LogisticRegression(random_state=0).fit(X_train, y_train)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+    clf = LogisticRegression(class_weight='balanced').fit(X_train, y_train)
+    print(y_test.value_counts(normalize=True))
     acc = clf.score(X_test, y_test)
     print(f"Test accuracy: {acc}")
 

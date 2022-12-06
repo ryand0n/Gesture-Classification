@@ -146,7 +146,7 @@ def collect_data(i, path, predicter=False, model=None):
     dict_data = all_data
     csv_file = path
 
-    if path == None:
+    if path != None:
         try:
             with open(csv_file, 'w') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
