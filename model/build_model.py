@@ -109,49 +109,68 @@ def transform_raw(dic):
     """
     dic: Dictionary with x, y, z as keys and lists of floats as values
     """
-    data = {}
-    index = ['x_mean', 'y_mean', 'z_mean', 'x_max', 'y_max', 'z_max', 'x_min',
-       'y_min', 'z_min', 'x_pca', 'y_pca', 'z_pca', 'x_slope', 'y_slope',
-       'z_slope', 'x_std', 'y_std', 'z_std', 'x_seg_slope_0', 'x_seg_slope_1',
-       'x_seg_slope_2', 'x_seg_slope_3', 'x_seg_slope_4', 'y_seg_slope_0',
-       'y_seg_slope_1', 'y_seg_slope_2', 'y_seg_slope_3', 'y_seg_slope_4',
-       'z_seg_slope_0', 'z_seg_slope_1', 'z_seg_slope_2', 'z_seg_slope_3',
-       'z_seg_slope_4']
+    changed = pd.DataFrame(
+        {"index": dic['index'],
+        "x": [dic['x']],
+        "y": [dic['y']],
+        "z": [dic['z']]}
+    )
 
     best_features = ['z_mean', 'x_min', 'y_min', 'z_min', 'z_slope', 'z_std',
-       'x_seg_slope_4', 'y_seg_slope_4', 'z_seg_slope_3', 'z_seg_slope_4',
-       'target']
+       'x_seg_slope_4', 'y_seg_slope_4', 'z_seg_slope_3', 'z_seg_slope_4']
 
-    # creating features
-    for key, value in dic.items():
-        if key != 'index':
-            mean = "{}_mean".format(key)
-            data[mean] = np.mean(value)
+    for col in changed.columns:
+        changed.at[0, col] = changed[col][0]
 
-            max = "{}_max".format(key)
-            data[max] = np.max(value)
+    df = changed
 
-            min = "{}_min".format(key)
-            data[min] = np.mean(value)
+    df = df.drop(columns=['index'])
 
-            pca_ = "{}_pca".format(key)
-            data[pca_] = pca(value)
+    og_cols = ['x', 'y', 'z']
+    for col in df.columns:
+        if col in og_cols:
+            new_col = "{}_mean".format(col)
+            df[new_col] = calc_mean(df, col)
 
-            slope = "{}_slope".format(key)
-            data[slope] = get_slope(value)
+    for col in df.columns:
+        if col in og_cols:
+            new_col = "{}_max".format(col)
+            df[new_col] = calc_max(df, col)
 
-            std = "{}_std".format(key)
-            data[std] = np.std(value)
+    for col in df.columns:
+        if col in og_cols:
+            new_col = "{}_min".format(col)
+            df[new_col] = calc_min(df, col)
 
-            segmented_slopes = chunky_slope(value)
-            for i in range(len(segmented_slopes)):
-                seg_slope = "{}_seg_slope_{}".format(key, i)
-                data[seg_slope] = segmented_slopes[i]    
+    for col in df.columns:
+        if col in og_cols:
+            new_col = "{}_pca".format(col)
+            df[new_col] = df[col].apply(lambda x: pca(x))
 
-    
-    changed = pd.DataFrame(data, index=[0])
-    return changed[best_features]
-    return pd.Series(data).reindex(index=index).to_numpy().reshape(1, -1)
+    for col in df.columns:
+        if col in og_cols:
+            new_col = "{}_slope".format(col)
+            df[new_col] = df[col].apply(lambda x: get_slope(x))
+
+    for col in df.columns:
+        if col in og_cols:
+            new_col = "{}_std".format(col)
+            df[new_col] = calc_std(df, col)
+
+    for col in df.columns:
+        if col in og_cols:
+            new_col = "{}_seg_slope".format(col)
+            df[new_col] = df[col].apply(lambda x: chunky_slope(x))
+
+    segmented = ['x_seg_slope', 'y_seg_slope', 'z_seg_slope']
+    for col in df.columns:
+        if col in segmented:
+            new_cols = ["{}_{}".format(col, i) for i in range(5)]
+            df[new_cols] = pd.DataFrame(df[col].tolist(), index=df.index)
+
+    df = df.drop(columns=['x', 'y', 'z', 'x_seg_slope', 'y_seg_slope', 'z_seg_slope'])
+
+    return df[best_features]
 
 def generate_random_data(df):
     random_data = np.random.rand(df.shape[0], df.shape[1])
